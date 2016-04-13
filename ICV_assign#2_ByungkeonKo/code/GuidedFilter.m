@@ -1,12 +1,17 @@
 
-function q = GuidedFilter( org_I )
+function q = GuidedFilter( org_I, nCOLOR, mode )
 
 org_P = org_I;
 
 etha = 0.1;
-hsize = 10;
-sigma = 0.5;
-nCOLOR = 1;
+radius = 8;
+hsize = 2*radius + 1;
+sigma = radius/4.;
+% hsize = 10;
+% sigma = 0.5;
+% sigma = 2.0;
+% hsize = 5;
+% sigma = 0.2;
 
 tmp_size = size(org_I);
 
@@ -14,11 +19,12 @@ I = zeros( tmp_size(1), tmp_size(2), 1 );
 P = zeros( tmp_size(1), tmp_size(2), 1 );
 
 if nCOLOR == 1
-	for y = 1:1:tmp_size(1);
-		for x = 1:1:tmp_size(2);
-			I(y,x) = sum(org_I(y,x,:)) /3. /255.0;
-			P(y,x) = sum(org_P(y,x,:)) /3. /255.0;
-		end
+	if mode == 0 
+		I(:,:) = double( sum( permute(org_I, [3,1,2]) ) ) /3. /255.;
+		P(:,:) = double( sum( permute(org_P, [3,1,2]) ) ) /3. /255.;
+	else
+		I(:,:) = double( org_I ) /255. ;
+		P(:,:) = double( org_P ) /255. ;
 	end
 	
 	W = fspecial('gaussian', hsize, sigma);
@@ -43,15 +49,10 @@ if nCOLOR == 1
 	q(:,:) = q_tmp;
 
 else 
-	for color = 1:1:3
-		for y = 1:1:tmp_size(1);
-			for x = 1:1:tmp_size(2);
-				% I(y,x) = sum(org_I(y,x,:)) /3. /255.0;
-				% P(y,x) = sum(org_P(y,x,:)) /3. /255.0;
-				I(y,x) = org_I(y,x,color) /255.0;
-				P(y,x) = org_P(y,x,color) /255.0;
-			end
-		end
+	q = zeros( tmp_size(1), tmp_size(2), 3 );
+	for color = 1:1:3;
+		I(:,:) = double( org_I(:,:,color) ) /255.;
+		P(:,:) = double( org_P(:,:,color) ) /255.;
 		
 		W = fspecial('gaussian', hsize, sigma);
 		
